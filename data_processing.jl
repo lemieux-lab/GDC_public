@@ -128,25 +128,6 @@ end
 data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types = load_tcga_data("tcga_GE_counts.h5")
 
 
-data
-
-function cancer_subset(data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types, 
-    target_type, outfile)
-cancer_idx = cancer_types .== target_type
-
-fid = h5open(outfile, "w")
-fid["Data Matrix"] = data[cancer_idx, : ]
-fid["Sample ID"] = samples[cancer_idx]
-fid["File UUID"] = files_uuid[cancer_idx]
-fid["Cancer Type"] = Array(cancer_types)[cancer_idx]
-fid["Tissue Type"] = Array(tissue_types)[cancer_idx]
-fid["Gene ENSG"] = genes
-fid["Gene Symbol"] = genes_symbol
-fid["Gene Type"] = Array(gene_type)    
-close(fid)
-end
-
-
 
 function cancer_subset(data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types, 
                         target_type, outfile)
@@ -155,10 +136,10 @@ function cancer_subset(data, samples, file_uuid, genes, genes_symbol, gene_type,
     fid = h5open(outfile, "w")
     fid["Data Matrix"] = data[cancer_idx, : ]
     fid["Sample ID"] = samples[cancer_idx]
-    fid["File UUID"] = files_uuid[cancer_idx]
+    fid["File UUID"] = file_uuid[cancer_idx]
     fid["Cancer Type"] = Array(cancer_types)[cancer_idx]
     fid["Tissue Type"] = Array(tissue_types)[cancer_idx]
-    fid["Gene ENSG"] = genes
+    fid["Gene ENSG"] = Array(genes)
     fid["Gene Symbol"] = genes_symbol
     fid["Gene Type"] = Array(gene_type)    
     close(fid)
@@ -167,28 +148,23 @@ end
 cancer_subset(data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types,
                 "TCGA-BRCA", "BRCA_TCGA_counts.h5")
 
-data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types = load_tcga_data("BRCA_TCGA_counts.h5")
+cancer_subset(data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types,
+                "TCGA-BRCA", "BRCA_TCGA_pam50_Thennavan.h5")
 
 
+data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types = load_tcga_data("BRCA_TCGA_pam50_Thennavan.h5")
 
 
-
-#TODO: add this to the cancer_subset h5 for PAM50
 pam50 = CSV.read("mmc2.csv", DataFrame)
-pam50_labels = pam50[!,3]
-pam50_files = pam50[!,1]
-
-pam50_filt = [pam50_labels .!= "CLOW".&& pam50_labels .!=  "True Normal" .&& [in(i, samples) for i in pam50_files]][1]
-sum(pam50_filt)
-
-#! Get all that isn't nothing.
-pam50_order = [findfirst(==(i), samples) for i in pam50_files[pam50_filt]] 
-pam50_order = filter(x -> x!=nothing, pam50_order)
+f = h5open("BRCA_TCGA_pam50_Thennavan.h5", "cw")
+pam50_labels = leftjoin(DataFrame(Dict(:CLID => samples)),pam50, on=:CLID)[:,3]
+pam50_labels[ismissing.(pam50_labels)] .= "NA"
+f["PAM50"] = String.( pam50_labels)
+close(f)
 
 
-#! ##########################
-clinical = CSV.read("clinical.tsv", DataFrame, delim="\t")
-[println(i) for i in names(clinical)]
+f = h5open("BRCA_TCGA_pam50_Thennavan.h5", "r")
+unique(read(f, "PAM50"))
+close(f)
 
 
-countmap(clinical[!,"demographic.days_to_death"])
