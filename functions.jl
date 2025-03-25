@@ -4,7 +4,7 @@ Pkg.activate(".")
 using CSV
 using DataFrames
 using Random
-
+using HDF5
 #! ONE file has a different annotation
 using ProgressBars
 
@@ -81,7 +81,7 @@ function build_tcga_h5(filedir, manifest, GE_values, gene_ensg, gene_symbol, gen
 
     cancer_types
 
-    using HDF5
+    
     fid = h5open(outfile, "w")
 
     fid["Sample ID"] = sample_id
