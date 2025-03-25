@@ -13,7 +13,6 @@ build_tcga_h5("GDC_raw", "gdc_sample_sheet.2025-03-21.tsv", GE_values, gene_ensg
 build_tcga_h5("GDC_raw", "gdc_sample_sheet.2025-03-21.tsv", GE_values, gene_ensg, gene_symbol, gene_type, "tcga_GE_tpm.h5")
 
 
-
 data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types = load_tcga_data("tcga_GE_counts.h5")
 
 
