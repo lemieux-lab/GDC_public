@@ -113,9 +113,8 @@ function build_tcga_h5_fixed(filedir, GE_values, file_ids, gene_ensg, gene_symbo
     for dir in ProgressBar(dirnames)
         table_path = "$filedir/$dir/readcount.tsv"
         SAMPLES = CSV.read(table_path, DataFrame, delim="\t")
-        names(SAMPLES)
 
-        sort!(SAMPLES, "Aliquot_ID")
+        sort!(SAMPLES, ["Project_ID", "Aliquot_ID"])
 
         cancer_types = vcat(cancer_types, SAMPLES[!,"Project_ID"])
         tissue_types = vcat(tissue_types, SAMPLES[!,"SampleType"])
@@ -156,7 +155,20 @@ function load_tcga_data_fixed(fname)
     return data, samples, genes, genes_symbol, gene_type, cancer_types, tissue_types
 end
 
+function cancer_subset_fixed(data, samples, file_uuid, genes, genes_symbol, gene_type, cancer_types, tissue_types, 
+    target_type, outfile)
+    cancer_idx = cancer_types .== target_type
 
+    fid = h5open(outfile, "w")
+    fid["Data Matrix"] = data[cancer_idx, : ]
+    fid["Sample ID"] = samples[cancer_idx]
+    fid["Cancer Type"] = Array(cancer_types)[cancer_idx]
+    fid["Tissue Type"] = Array(tissue_types)[cancer_idx]
+    fid["Gene ENSG"] = Array(genes)
+    fid["Gene Symbol"] = genes_symbol
+    fid["Gene Type"] = Array(gene_type)    
+    close(fid)
+end
 
 ###################################
 

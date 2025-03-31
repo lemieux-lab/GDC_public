@@ -17,17 +17,22 @@ filedir="/home/golem/GDC/data/tables"
 outfile="TCGA_counts_fixed.h5"
 build_tcga_h5_fixed(filedir, GE_values, file_ids, gene_ensg, gene_symbol, gene_type, outfile)
 
+file_ids
 
 
 
 
+#! Check all is good
 data, samples, genes, genes_symbol, gene_type, cancer_types, 
     tissue_types = load_tcga_data_fixed("TCGA_counts_fixed.h5")
 
 
 data
-sum(tissue_types .=="Primary Tumor") #... there are more samplesbut fewer tumor?
+sum(tissue_types .=="Primary Tumor") #!... there are more samples but fewer tumor?
 
+
+data
+samples
 
 # TODO: make TCGA
 
